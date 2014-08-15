@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Haskel 101</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="style.css" />
+    <script src="http://code.jquery.com/jquery.min.js"></script>
+    <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML&amp;delayStartupUntil=configured" type="text/javascript"></script>
+  </head>
+  <body>
+    <span style="display:none">INFOR 24<sup>th</sup><br>西瓜(@arbuztw)
+.footnote[2014 reINFORcement]</span>
+    <textarea id="source" style="display:none">
+class: inverse, center, middle, front-page
+# Haskell 101
+INFOR 24<sup>th</sup><br>西瓜<br>.small[[@arbuztw](http://github.com/arbuztw)]
+
+2014 reINFORcement
+
+---
+# Introduction
+- 純函數式語言(Purely functional programming language)
+- 函數是一等公民 (first-class citizen)
+- 定義是什麼，而非做什麼
+- 惰性求值(Lazy Evaluation)
+- 靜態型別(Statically Typed)
+
+---
+class: middle 
+> Haskell 派雖然不為大眾所知，但專門學者普遍認為，就算在『函數型程式語言』這個宗教裡，他們也是屬於特別危險的**基本教義狂信派**。
+
+> 他們對 ML 的妥協路線感到不滿，同時也認為 Lisp 派的浪蕩行為是對『唯一絕對真神 λ』難以饒恕的背叛。 
+
+<div style="text-align:right; font-style:italic">-- from [Haskell 脳の恐怖](http://audrey.nu/-/2014/05/09/awesomeness-of-the-haskell-brain)</div>
+---
+# 開始使用 Haskell
+⺫前常見的 Haskell 編繹器為 GHC 和 Hugs 兩種。<br>
+我們這次選擇使用的是 GHC(Glasgow Haskell Compiler),它是由 Haskell 所寫的,同時支援編譯 (Compile) 與直譯 (Interpret)。
+
+- Install [GHC](http://www.haskell.org/ghc/) / [Haskell Platform](https://www.haskell.org/platform/)
+
+- REPL: ```ghci```
+
+- Compile: ```ghc source.hs -o exe```
+
+- Run directly: ```runhaskell source.hs```
+
+---
+class: center, middle, inverse
+# **Hello World?**
+
+---
+class: center, middle
+# **Hello .pink[Fibonacci!]**
+
+---
+class: middle
+#.top[Hello Fibonacci!]
+.mathbig[```\begin{align}
+& F_0 = 1 \\
+& F_1 = 1 \\
+& F_n = F_{n-1} + F_{n-2}
+\end{align}```]
+
+---
+class: middle
+#.top[Hello Fibonacci!]
+.mathbig[```\begin{align}
+& fib(0) = 1 \\
+& fib(1) = 1 \\
+& fib(n) = fib(n-1) + fib(n-2)
+\end{align}```]
+
+---
+# Hello Fibonacci!
+- fib.hs
+```haskell
+fib 0 = 1
+fib 1 = 1
+fib n = fib (n-1) + fib (n-2)
+```
+- Try It!<br>
+`$ ghci fib.hs`
+```
+*Main> fib 10
+55
+```
+
+---
+# Hello Fibonacci!
+- fib.hs
+```haskell
+fib 0 = 1
+fib 1 = 1
+fib n = fib (n-1) + fib (n-2)
+```
+- Try It!<br>
+`$ ghci fib.hs`
+```
+*Main> fib 10
+55
+```
+
+### 跟數學式幾乎一模一樣!
+
+---
+# 定義函數
+- 數學函數<br>
+Eg. $f: \mathbb{R} \to \mathbb{R}$
+- 沒有副作用 (Side Effect)
+
+---
+# 定義函數
+- 數學函數<br>
+Eg. $f: \mathbb{R} \to \mathbb{R}$
+- 沒有副作用 (Side Effect)
+- doubleMe
+```haskell
+doubleMe :: Int &rarr; Int
+doubleMe x = x + x
+```
+- smaller
+```haskell
+smaller :: Int &rarr; Int &rarr; Int
+smaller x y = if x &le; y then x else y
+```
+
+---
+# 定義函數 .small[Guards]
+- 不同的判斷式對應不同function body
+```haskell
+smaller x y | x &le; y  = x
+              | x > y  = y
+```
+- 也可以這麼寫
+```haskell
+smaller x y | x &le; y     = x
+              | otherwise = y
+```
+- 比巢狀if更具可讀性
+
+---
+# 定義函數 .small[Local Bindings]
+## Let-expression
+```haskell
+f x y = let a = x + y
+            b = x - y
+        in a &times; b
+```
+## Where-clause
+```haskell
+g r | area &le; 10 = 10 - area
+    | otherwise = area
+  where area = r &times; r &times; 3.14
+```
+
+---
+# Currying Function
+- 事實上Haskell的函數都只有一個參數
+
+---
+# Currying Function
+- 事實上Haskell的函數都只有一個參數
+- 回憶一下剛剛的`smaller`函數
+```haskell
+smaller :: Int &rarr; Int &rarr; Int
+smaller x y | x &le; y     = x
+              | otherwise = y
+```
+
+---
+# Currying Function
+- 事實上Haskell的函數都只有一個參數
+- 回憶一下剛剛的`smaller`函數
+```haskell
+smaller :: Int &rarr; Int &rarr; Int
+smaller x y | x &le; y     = x
+              | otherwise = y
+```
+- 他的型別應該長這樣
+```haskell
+smaller :: Int &rarr; (Int &rarr; Int)
+```
+
+---
+# Currying Function
+- 事實上Haskell的函數都只有一個參數
+- 回憶一下剛剛的`smaller`函數
+```haskell
+smaller :: Int &rarr; Int &rarr; Int
+smaller x y | x &le; y     = x
+              | otherwise = y
+```
+- 他的型別應該長這樣
+```haskell
+smaller :: Int &rarr; (Int &rarr; Int)
+```
+- 他的呼叫實際上是這樣
+```
+> (smaller 3) 4
+```
+
+---
+# Currying Function
+- 函數是First-class object/citizen
+  - 可以是expression evaluate的結果
+  - 可以當作參數傳遞
+- 函數可以被部分呼叫(partially applied)
+  - For example
+  ```haskell
+  smaller3 y = smaller 3
+  ```
+  - Try it!
+  ```
+  > smaller3 4
+  3
+  > smaller3 2
+  2
+  ```
+
+---
+# Currying Function .small[Infix Operator]
+- 運算子也是函數!
+  - $+$ 的type可能是 $Int \to Int \to Int$
+  - Infix Operator
+- Infix Operator與Prefix function的轉換
+  - Infix to Prefix
+  ```
+  > (+) 1 2
+  3
+  ```
+  - Prefix to Infix
+  ```
+  > 3 `mod` 2
+  1
+  ```
+---
+# Currying Function .small[Infix Operator]
+- Infix operator也是currying function
+  - $(x \oplus) y = x \oplus y$
+  ```
+  > (8 /) 4
+  2
+  ```
+  - $(\oplus y) x = x \oplus y$
+  ```
+  > (/ 4) 8
+  2
+  ```
+
+---
+# λ Expressions
+- 匿名函數(Anonymous Function)
+- &lambda; 在Haskell中寫為\
+- Example
+```haskell
+&lambda;x &rarr; x + 1
+&lambda;x &rarr; &lambda;y &rarr; x + y
+&lambda;x y &rarr; x + y
+```
+- 另一種定義函數的方式
+```haskell
+smaller :: Int &rarr; Int &rarr; Int
+smaller = &lambda;x y &rarr; if x &le; y then x else y
+```
+
+---
+#Higher-Order Functions
+- 所謂的高階函數通常是指能夠接受函數做為參數或者回傳值為函數的函數
+
+---
+#Higher-Order Functions
+- 所謂的高階函數通常是指能夠接受函數做為參數或者回傳值為函數的函數
+- functions compostion
+```haskell
+f . g = &lambda; x &rarr; f (g x)
+```
+```haskell
+ghci> ((+1) . (*2)) 2
+5
+```
+
+---
+#Higher-Order Functions
+- 所謂的高階函數通常是指能夠接受函數做為參數或者回傳值為函數的函數
+- functions compostion
+```haskell
+f . g = &lambda; x &rarr; f (g x)
+```
+```haskell
+ghci> ((+1) . (*2)) 2
+5
+```
+- function application
+```haskell
+f $ x = f x
+```
+```haskell
+max 1 $ max 2 3 = max 1 (max 2 3)
+```
+
+---
+#Simple Datatypes
+## Bool
+- True, False
+- Functions: not, (&&), (||), (==), (/=)
+
+## Int
+- -2147483647 ~ 2147483647
+- Funcitons: (+), (-), (*), div, mod, ... etc.
+
+## Integer
+- 大數
+
+---
+#Simple Datatypes
+## Char
+- 用''包住的字元
+
+##Float
+- 單精度浮點數
+
+##Double
+- 倍精度浮點數
+
+---
+#Polymorphic Types
+- (.) 的type 是什麼?
+
+---
+#Polymorphic Types
+- (.) 的type 是什麼?
+- 考慮下面兩種情況
+```haskell
+(+1) . (*2) :: Int &rarr; Int
+(>0) . (+1) :: Int &rarr; Bool
+```
+
+---
+#Polymorphic Types
+- (.) 的type 是什麼?
+- 考慮下面兩種情況
+```haskell
+(+1) . (*2) :: Int &rarr; Int
+(>0) . (+1) :: Int &rarr; Bool
+```
+- 哪個才是正確的?
+```haskell
+(.) :: (Int &rarr; Int) &rarr; (Int &rarr; Int) &rarr; (Int &rarr; Int)
+(.) :: (Int &rarr; Bool) &rarr; (Int &rarr; Int) &rarr; (Int &rarr; Bool)
+```
+
+---
+#Polymorphic Types
+- (.) 的type 是什麼?
+- 考慮下面兩種情況
+```haskell
+(+1) . (*2) :: Int &rarr; Int
+(>0) . (+1) :: Int &rarr; Bool
+```
+- 哪個才是正確的?
+```haskell
+(.) :: (Int &rarr; Int) &rarr; (Int &rarr; Int) &rarr; (Int &rarr; Int)
+(.) :: (Int &rarr; Bool) &rarr; (Int &rarr; Int) &rarr; (Int &rarr; Bool)
+```
+- 於是我們有了type variables
+```haskell
+(.) :: (b &rarr; c) &rarr; (a &rarr; b) &rarr; (a &rarr; c)
+```
+其中a, b, c各代表一種任意的型別
+
+---
+# List
+- 最常用的資料結構之一
+- 組合多個*相同型別*的元素
+- empty list
+```haskell
+[]
+``` 
+- An simple example 
+```haskell
+ghci> let prime = [2, 3, 5, 7]
+[2, 3, 5, 7]
+``` 
+- String (list of char)
+```haskell
+ghci> ['H', 'e', 'l', 'l', 'o']
+Hello
+```
+
+---
+#List functions
+- head : 取得List的第一個元素
+```haskell
+head :: [a] &rarr; a
+```
+```haskell
+ghci> head [7,1,2,2]
+7
+```
+- tail : 取得List的除去第一個元素的部分 (another list)
+```haskell
+tail :: [a] &rarr; [a]
+```
+```haskell
+ghci> tail [7,1,2,2]
+[1, 2, 2]
+```
+
+---
+#List functions
+- init : 取得最後一個元素前的list
+```haskell
+init :: [a] &rarr; [a]
+```
+```haskell
+ghci> init [7, 1, 2, 2]
+[7, 1, 2]
+```
+- last : 取得最後一個元素
+```haskell
+last :: [a] &rarr; a
+```
+```haskell
+ghci> last [7, 1, 2, 2]
+2
+```
+- null : 判斷是否為空list
+```haskell
+null :: [a] &rarr; Bool
+```
+
+---
+#List functions
+- (:) : 在list最前頭加入一個元素
+```haskell
+(:) :: a &rarr; [a] &rarr; [a]
+```
+```haskell
+ghci> 3 : [7,1,2,2]
+[3,7,1,2,2]
+```
+- (++) : 結合兩個list
+```haskell
+(++) :: [a] &rarr; [a] &rarr; [a]
+```
+```haskell
+ghci> "Hello" ++ " World!"
+Hello World!
+```
+
+---
+#List functions
+- take : 取得前幾個元素
+```haskell
+take :: Int &rarr; [a] &rarr; [a]
+```
+```haskell
+ghci> take 3 [7, 1, 2, 2]
+[7, 1, 2]
+```
+- drop : 刪除前幾個元素 
+```haskell
+drop :: Int &rarr; [a] &rarr; [a]
+```
+```haskell
+ghci> drop 1 [7, 1, 2, 2]
+[1, 2, 2]
+```
+
+---
+#List generator
+- 給定上下界
+```haskell
+ghci> [1..5]
+[1, 2, 3, 4, 5]
+```
+```haskell
+ghci> ['a'..'e']
+"abcde"
+```
+- 給定上下界與step
+```haskell
+ghci> [1, 3..9]
+[1, 3, 5, 7, 9]
+```
+- 無限長list
+```haskell
+ghci> [1..]
+[1, 2, 3, 4, 5, ...
+```
+```haskell
+ghci> take 5 [1..]
+[1, 2, 3, 4, 5]
+```
+
+---
+#List comprehension
+- 回憶一下數學上集合的表示方法 <br>
+$$ S = \left\lbrace x^3 \middle| x \in \mathbb{N}, x \leq 5 \right\rbrace $$
+$$ S = \left\lbrace (x, y) \middle| x \in \mathbb{N}, y \in \mathbb{N}, x \leq y, y \leq 3 \right\rbrace $$
+
+---
+#List comprehension
+- 回憶一下數學上集合的表示方法 <br>
+$$ S = \left\lbrace x^3 \middle| x \in \mathbb{N}, x \leq 5 \right\rbrace $$
+$$ S = \left\lbrace (x, y) \middle| x \in \mathbb{N}, y \in \mathbb{N}, x \leq y, y \leq 3 \right\rbrace $$
+- Haskell提供類似的方法來產生list
+```haskell
+ghci> [ x^3 | x &larr; [1..5] ]
+[1,8,27,64,125]
+```
+```haskell
+ghci> [ x+y | x &larr; [1..3], y &larr; [1..3], x &le; y ]
+[2,3,4,4,5,6]
+```
+---
+#Tuple
+- 多個*不同型別*的元素組合
+- Example
+```haskell
+(1, True, 'c')
+```
+- fst
+```haskell
+fst :: (a, b) &rarr; a
+```
+```haskell
+ghci> fst (1, 2)
+1
+```
+- snd
+```haskell
+snd :: (a, b) &rarr; b
+```
+```haskell
+ghci> snd (1, 2)
+2
+```
+
+---
+#自定type
+Haskell也和其他語言一樣提供我們自定type的語法
+## data
+- 紅綠燈
+```haskell
+data Traffic = Green | Yellow | Red
+```
+- 學校成員
+```haskell
+data Member = Student Int String | Teacher String
+```
+
+## type (type synonyms)
+```haskell
+type Name = [Char]
+type Id = Int
+```
+
+---
+#自定type .small[data]
+### General Form
+```haskell
+data Type = Con1 Type11 Type12 ... 
+          | Con2 Type21 Type22 ...
+          |  &#8942; 
+```
+- 一個type可以有許多的Constructor (Con1, Con2, ... )<br>
+每個Constructor接收不同數量和型別的參數<br>
+Eg.
+  - ```haskell
+    Student :: Int &rarr; String &rarr; Member
+    ```
+  - ```haskell
+    Teacher :: String &rarr; Member
+    ```
+
+---
+#自定type .small[data]
+### General Form
+```haskell
+data Type = Con1 Type11 Type12 ... 
+          | Con2 Type21 Type22 ...
+          |  &#8942; 
+```
+- 其中的|可看做是「或」, 代表這個type可能是Con1的case或Con2的case... etc.
+- 這些被Constructor包住的值有時也被稱為tagged union/value
+
+---
+#自定type .small[data]
+來看看list一種可能的定義方式
+```haskell
+data List a = Empty | Cons a (List a)
+```
+其中Empty對應到\[\], Cons對應到(:)
+
+---
+#自定type .small[data]
+來看看list一種可能的定義方式
+```haskell
+data List a = Empty | Cons a (List a)
+```
+其中Empty對應到\[\], Cons對應到(:)
+
+- 可以遞迴定義type!
+
+
+---
+#自定type .small[data]
+來看看list一種可能的定義方式
+```haskell
+data List a = Empty | Cons a (List a)
+```
+其中Empty對應到\[\], Cons對應到(:)
+
+- 可以遞迴定義type!
+- type定義中可以使用type variable!
+
+---
+#Pattern matching
+## An introductory example -- add two tuples
+- 不使用pattern matching
+```haskell
+add :: (Int, Int) &rarr; (Int, Int) &rarr; (Int, Int)
+add x y = (fst x + fst y, snd x + snd y)
+```
+- 使用pattern matching
+```haskell
+add :: (Int, Int) &rarr; (Int, Int) &rarr; (Int, Int)
+add (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
+```
+
+可以發現使用pattern matching讓code變得更簡潔易懂
+
+---
+#Pattern matching
+- pattern matching會自動去match符合的constructor並取出值
+
+---
+#Pattern matching
+- pattern matching會自動去match符合的constructor並取出值
+- Another example -- Fibonacci
+```haskell
+fib 0 = 1
+fib 1 = 1
+fib n = fib (n-1) + fib (n-2)
+```
+
+---
+#Pattern matching
+- pattern matching會自動去match符合的constructor並取出值
+- Another example -- Fibonacci
+```haskell
+fib 0 = 1
+fib 1 = 1
+fib n = fib (n-1) + fib (n-2)
+```
+- 
+```haskell
+data Int =  -2147483648 | ... | 0 | ... | 2147483647
+```
+
+---
+#Pattern matching
+## List
+```haskell
+length :: [a] &rarr; Int
+length [] = 0
+length (x:xs) = 1 + length xs
+```
+## Self-defined datatypes
+```haskell
+getName :: Member &rarr; String
+getName (Student _ name) = name
+getName (Teacher name) = name
+```
+## List comprehension
+```haskell
+[ a &times; b | (a, b) &larr; [(1, 2), (3, 4)] ]
+```
+
+---
+#Pattern matching
+Pattern matching是Haskell中非常重要且強大的功能, 在使用時需要注意
+
+- pattern matching會從最上面開始matching, 因此不同順序結果可能會不同
+```haskell
+fact n = n * fact (n-1)
+fact 0 = 1
+```
+- 要隨時注意(不要出現)Non-exhaustive patterns
+```haskell
+head (x:xs) = x
+```
+
+---
+#Case-expressions
+- generalize的pattern matching
+- syntax
+```haskell
+case expr of
+    pattern1 &rarr; expr1
+    pattern2 &rarr; expr2
+      &#8942;
+```
+- Syntatic sugar
+```haskell
+length :: [a] &rarr; Int
+length xs =
+   case xs of
+     []      &rarr; 0
+     (_:xs') &rarr; 1 + length xs'
+```
+
+---
+#Maybe and Either
+##Maybe
+```haskell
+data Maybe a = Just a | Nothing
+```
+
+---
+#Maybe and Either
+##Maybe
+```haskell
+data Maybe a = Just a | Nothing
+```
+- 通常用來做錯誤處理, 不必丟出exception
+
+---
+#Maybe and Either
+##Maybe
+```haskell
+data Maybe a = Just a | Nothing
+```
+- 通常用來做錯誤處理, 不必丟出exception
+- 改寫head函數
+```haskell
+head' :: [a] &rarr; Maybe a
+head' [] = Nothing
+head' (x:_) = Just x
+```
+
+---
+#Maybe and Either
+##Maybe
+```haskell
+data Maybe a = Just a | Nothing
+```
+- 通常用來做錯誤處理, 不必丟出exception
+- 改寫head函數
+```haskell
+head' :: [a] &rarr; Maybe a
+head' [] = Nothing
+head' (x:_) = Just x
+```
+
+##Either
+```haskell
+data Either a b = Left a | Right b
+```
+- 通常用Left儲存錯誤訊息, Right儲存結果
+
+---
+#Play with List functions
+##Sum
+```haskell
+sum :: [Int] &rarr; Int
+sum [] = 0
+sum (x:xs) = x + sum xs
+```
+##Concat
+```haskell
+concat :: [[a]] &rarr; [a]
+concat [] = []
+concat (x:xs) = x ++ concat xs
+```
+##Reverse
+```haskell
+reverse :: [a] &rarr; [a]
+reverse [] = []
+reverse (x:xs) = reverse xs ++ [x]
+```
+
+---
+#Play with List functions
+##Map
+```haskell
+map :: (a &rarr; b) &rarr; [a] &rarr; [b]
+map f [] = []
+map f (x:xs) = f x : map f xs
+```
+##Filter
+```haskell
+filter :: (a &rarr; Bool) &rarr; [a] &rarr; [a]
+filter f [] = []
+filter f (x:xs)
+  | f x       = x : filter xs
+  | otherwise = filter xs
+```
+##Zip
+```haskell
+zip :: [a] &rarr; [b] &rarr; [(a, b)]
+zip [1,2,3] [4,5,6] = [(1, 4), (2, 5), (3, 6)]
+```
+
+---
+#Play with List functions
+##TakeWhile
+```haskell
+takeWhile :: (a &rarr; Bool) &rarr; [a] &rarr; [a]
+takeWhile f [] = []
+takeWhile f (x:xs)
+   | f x       = x : takeWhile f xs
+   | otherwise = []
+```
+##DropWhile
+```haskell
+dropWhile :: (a &rarr; Bool) &rarr; [a] &rarr; [a]
+dropWhile f [] = []
+dropWhile f (x:xs)
+   | f x       = dropWhile f xs 
+   | otherwise = x : xs
+```
+
+---
+#Play with List functions
+- sum and product
+```haskell
+sum [] = 0
+sum (x:xs) = x + length xs
+product [] = 1
+product (x:xs) = x * length xs
+```
+
+---
+#Play with List functions
+- sum and product
+```haskell
+sum [] = 0
+sum (x:xs) = x + length xs
+product [] = 1
+product (x:xs) = x * length xs
+```
+- higher-order functions?
+```haskell
+f g v [] = v
+f g v (x:xs) = g x (f g v xs)
+```
+
+---
+#Play with List functions
+- sum and product
+```haskell
+sum [] = 0
+sum (x:xs) = x + length xs
+product [] = 1
+product (x:xs) = x * length xs
+```
+- higher-order functions?
+```haskell
+f g v [] = v
+f g v (x:xs) = g x (f g v xs)
+```
+- foldr
+```haskell
+foldr :: (a &rarr; b &rarr; b) &rarr; b &rarr; [a] &rarr; b
+```
+
+---
+#Play with List functions .small[folds]
+##foldl
+```haskell
+foldl :: (b &rarr; a &rarr; b) &rarr; b &rarr; [a] &rarr; b
+foldl f v [] = v
+foldl f v (x:xs) = foldl f (f v x) xs
+```
+##foldl1
+```haskell
+foldl1 :: (a &rarr; a &rarr; a) &rarr; [a] &rarr; a
+foldl1 (+) [1,2,3] = 6
+```
+##foldr1
+```haskell
+foldr1 :: (a &rarr; a &rarr; a) &rarr; [a] &rarr; a
+foldr1 (*) [1,2,3] = 6
+```
+
+---
+#Play with List functions
+- 任何input為list函數都可由foldr寫成
+  - `sum = foldr (+) 0`
+  - `xs ++ ys = foldr (:) ys xs`
+  - `length = foldr (&lambda;x n &rarr; 1 + n) 0`
+  - `map f = foldr (&lambda;x xs &rarr; f x : xs) []`
+  - etc.
+
+---
+#Play with List functions
+- 任何input為list函數都可由foldr寫成
+  - `sum = foldr (+) 0`
+  - `xs ++ ys = foldr (:) ys xs`
+  - `length = foldr (&lambda;x n &rarr; 1 + n) 0`
+  - `map f = foldr (&lambda;x xs &rarr; f x : xs) []`
+  - etc.
+- list comprehension可以表示為map, filter和concat的組合
+
+---
+#參考資料
+1. Learn You a Haskell for Great Good! ([中文電子書](http://learnyouahaskell-zh-tw.csie.org/))
+2. [FLOLAC'14](http://flolac.iis.sinica.edu.tw/flolac14/) Functional Programming Using Haskell by Prof. Shin-Cheng Mu ([投影片](http://http://www.slideshare.net/funthr/functional-programming-36452166))
+3. Haskell wiki ([link](http://www.haskell.org/haskellwiki/Haskell))
+4. Real World Haskell ([電子書](http://book.realworldhaskell.org/read/))
+
+    </textarea>
+    <script src="remark-0.5.9.min.js" type="text/javascript">
+    </script>
+    <script src="highlight.pack.js"></script>
+    <script type="text/javascript">
+		remark.highlighter.engine = hljs;
+      var slideshow = remark.create({
+        highlightStyle: 'ir_black'
+      });
+      MathJax.Hub.Config({
+        "HTML-CSS": { scale: 75 },
+        tex2jax: {
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+          inlineMath: [['$','$'], ['\\(','\\)']],
+          displayMath: [['$$','$$']],
+          displayAlign: "left"
+        },
+      });
+      MathJax.Hub.Configured();
+    </script>
+  </body>
+</html>
