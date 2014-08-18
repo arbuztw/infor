@@ -853,9 +853,9 @@ f g v (x:xs) = g x (f g v xs)
 - sum and product
 ```haskell
 sum [] = 0
-sum (x:xs) = x + length xs
+sum (x:xs) = x + sum xs
 product [] = 1
-product (x:xs) = x * length xs
+product (x:xs) = x * product xs
 ```
 - higher-order functions?
 ```haskell
